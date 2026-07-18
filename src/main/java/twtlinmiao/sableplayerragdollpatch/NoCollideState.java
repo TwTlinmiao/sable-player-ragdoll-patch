@@ -17,6 +17,8 @@ public final class NoCollideState {
 
    /** True while ANY Entity.move() is executing (player/mob movement). */
    public static final ThreadLocal<Boolean> INSIDE_ENTITY_MOVE = ThreadLocal.withInitial(() -> false);
+   /** True while Player pose fit checks are testing available space. */
+   public static final ThreadLocal<Boolean> INSIDE_PLAYER_POSE_CHECK = ThreadLocal.withInitial(() -> false);
 
    public static boolean isEnabled() {
       if (initialized.compareAndSet(false, true)) {

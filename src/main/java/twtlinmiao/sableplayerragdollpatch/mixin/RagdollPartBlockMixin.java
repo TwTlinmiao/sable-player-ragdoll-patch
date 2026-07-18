@@ -23,7 +23,9 @@ public class RagdollPartBlockMixin {
    @Inject(method = "getCollisionShape", at = @At("HEAD"), cancellable = true, remap = false)
    private void sprOnGetCollisionShape(BlockState state, BlockGetter level, BlockPos pos,
                                         CollisionContext context, CallbackInfoReturnable<VoxelShape> cir) {
-      if (NoCollideState.isEnabled() && Boolean.TRUE.equals(NoCollideState.INSIDE_ENTITY_MOVE.get())) {
+      if (NoCollideState.isEnabled()
+            && (Boolean.TRUE.equals(NoCollideState.INSIDE_ENTITY_MOVE.get())
+            || Boolean.TRUE.equals(NoCollideState.INSIDE_PLAYER_POSE_CHECK.get()))) {
          cir.setReturnValue(Shapes.empty());
       }
    }

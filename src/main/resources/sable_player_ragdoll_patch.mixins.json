@@ -9,6 +9,7 @@
         "RagdollPartBlockEntityModelPartMixin",
         "EntityMoveMixin",
         "EntityPushMixin",
+        "PlayerPoseMixin",
         "RagdollPartBlockMixin"
     ],
     "client": [
