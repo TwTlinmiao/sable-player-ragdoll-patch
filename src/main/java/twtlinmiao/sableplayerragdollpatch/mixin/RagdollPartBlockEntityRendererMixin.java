@@ -21,6 +21,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import twtlinmiao.sableplayerragdollpatch.DynamicLightsCompat;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -110,6 +111,23 @@ public class RagdollPartBlockEntityRendererMixin {
         model.rightSleeve.visible &= visibility.spr$isModelPartShown(PlayerModelPart.RIGHT_SLEEVE);
         model.leftPants.visible &= visibility.spr$isModelPartShown(PlayerModelPart.LEFT_PANTS_LEG);
         model.rightPants.visible &= visibility.spr$isModelPartShown(PlayerModelPart.RIGHT_PANTS_LEG);
+    }
+
+    @Inject(
+        method = "render(Ldev/leo/sableplayerragdoll/block/entity/RagdollPartBlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V",
+        at = @At("HEAD"),
+        remap = false
+    )
+    private void spr$updateDynamicLightSource(
+        RagdollPartBlockEntity blockEntity,
+        float partialTick,
+        PoseStack poseStack,
+        MultiBufferSource buffer,
+        int packedLight,
+        int packedOverlay,
+        CallbackInfo ci
+    ) {
+        DynamicLightsCompat.updateRenderedPart(blockEntity, partialTick);
     }
 
     @Inject(

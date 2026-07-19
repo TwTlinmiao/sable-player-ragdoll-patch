@@ -133,6 +133,8 @@ publishing {
 }
 
 jar {
+    from('LICENSE')
+
     manifest {
         attributes([
             'Specification-Title'   : mod_name,
@@ -144,4 +146,8 @@ jar {
             'Built-On-Minecraft'    : minecraft_version
         ])
     }
+}
+
+sourcesJar {
+    from('LICENSE')
 }

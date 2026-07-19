@@ -11,6 +11,7 @@ public final class RagdollPatchClientConfig {
     public static final ModConfigSpec CLIENT_CONFIG;
     public static ModConfigSpec.BooleanValue CURIOS_FIX_ENABLED;
     public static ModConfigSpec.BooleanValue IRIS_TRANSLUCENT_SKIN_FIX_ENABLED;
+    public static ModConfigSpec.BooleanValue RAGDOLL_DYNAMIC_LIGHTS_ENABLED;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -36,6 +37,14 @@ public final class RagdollPatchClientConfig {
                 "rear faces on Curios/transparent cosmetics."
             )
             .define("irisTranslucentSkinFixEnabled", true);
+
+        RAGDOLL_DYNAMIC_LIGHTS_ENABLED = builder
+            .comment(
+                "When enabled, ragdoll hands holding luminous items act as dynamic light sources",
+                "for Sodium/Embeddium Dynamic Lights and LambDynamicLights.",
+                "Also brightens the ragdoll model itself to match the held light."
+            )
+            .define("ragdollDynamicLightsEnabled", true);
 
         builder.pop();
         CLIENT_CONFIG = builder.build();
