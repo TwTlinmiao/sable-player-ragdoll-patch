@@ -2,11 +2,13 @@ package twtlinmiao.sableplayerragdollpatch.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity;
+import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity.BodyPart;
 import dev.leo.sableplayerragdoll.neoforge.client.RagdollPartBlockEntityRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import twtlinmiao.sableplayerragdollpatch.IrisTransparencyCompat;
 import twtlinmiao.sableplayerragdollpatch.ModelPartVisibilityAccess;
+import twtlinmiao.sableplayerragdollpatch.RagdollLighting;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -28,6 +30,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class RagdollPartBlockEntityRendererMixin {
     @Shadow(remap = false)
     private PlayerModel<?> model;
+
+    @Shadow(remap = false)
+    private void renderLayers(RagdollPartBlockEntity blockEntity, BodyPart bodyPart, LivingEntity entity, PoseStack poseStack, MultiBufferSource buffer, int packedLight, float partialTick) {
+        throw new AssertionError();
+    }
 
     @Redirect(
         method = "<init>",
@@ -53,6 +60,27 @@ public class RagdollPartBlockEntityRendererMixin {
     )
     private RenderType spr$irisSafeSkinRenderType(ResourceLocation texture) {
         return IrisTransparencyCompat.ragdollSkinRenderType(texture);
+    }
+
+    @Redirect(
+        method = "render(Ldev/leo/sableplayerragdoll/block/entity/RagdollPartBlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V",
+        at = @At(
+            value = "INVOKE",
+            target = "Ldev/leo/sableplayerragdoll/neoforge/client/RagdollPartBlockEntityRenderer;renderLayers(Ldev/leo/sableplayerragdoll/block/entity/RagdollPartBlockEntity;Ldev/leo/sableplayerragdoll/block/entity/RagdollPartBlockEntity$BodyPart;Lnet/minecraft/world/entity/LivingEntity;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IF)V"
+        ),
+        remap = false
+    )
+    private void spr$renderLayersWithWorldLight(
+        RagdollPartBlockEntityRenderer renderer,
+        RagdollPartBlockEntity blockEntity,
+        BodyPart bodyPart,
+        LivingEntity entity,
+        PoseStack poseStack,
+        MultiBufferSource buffer,
+        int packedLight,
+        float partialTick
+    ) {
+        this.renderLayers(blockEntity, bodyPart, entity, poseStack, buffer, RagdollLighting.worldLightFor(blockEntity, partialTick, packedLight), partialTick);
     }
 
     @Inject(
