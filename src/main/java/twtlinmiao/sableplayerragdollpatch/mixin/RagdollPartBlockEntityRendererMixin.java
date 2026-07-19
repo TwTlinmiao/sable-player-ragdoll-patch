@@ -3,6 +3,9 @@ package twtlinmiao.sableplayerragdollpatch.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity;
 import dev.leo.sableplayerragdoll.neoforge.client.RagdollPartBlockEntityRenderer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
+import twtlinmiao.sableplayerragdollpatch.IrisTransparencyCompat;
 import twtlinmiao.sableplayerragdollpatch.ModelPartVisibilityAccess;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -38,6 +41,18 @@ public class RagdollPartBlockEntityRendererMixin {
         boolean slim = layer == ModelLayers.PLAYER_SLIM;
         MeshDefinition mesh = PlayerModel.createMesh(CubeDeformation.NONE, slim);
         return mesh.getRoot().bake(64, 64);
+    }
+
+    @Redirect(
+        method = "renderLayers",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/renderer/RenderType;entityTranslucent(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/RenderType;"
+        ),
+        remap = false
+    )
+    private RenderType spr$irisSafeSkinRenderType(ResourceLocation texture) {
+        return IrisTransparencyCompat.ragdollSkinRenderType(texture);
     }
 
     @Inject(

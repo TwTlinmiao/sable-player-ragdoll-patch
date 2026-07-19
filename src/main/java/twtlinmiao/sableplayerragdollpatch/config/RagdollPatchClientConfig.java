@@ -10,6 +10,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class RagdollPatchClientConfig {
     public static final ModConfigSpec CLIENT_CONFIG;
     public static ModConfigSpec.BooleanValue CURIOS_FIX_ENABLED;
+    public static ModConfigSpec.BooleanValue IRIS_TRANSLUCENT_SKIN_FIX_ENABLED;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -26,6 +27,15 @@ public final class RagdollPatchClientConfig {
                 "Disable if you do not use Curios and want the original behavior."
             )
             .define("curiosFixEnabled", true);
+
+        IRIS_TRANSLUCENT_SKIN_FIX_ENABLED = builder
+            .comment(
+                "When Iris is installed, render ragdoll part player skins with the",
+                "vanilla PlayerModel cutout render type instead of Sable's translucent",
+                "render type. This avoids Iris translucent-entity sorting hiding",
+                "rear faces on Curios/transparent cosmetics."
+            )
+            .define("irisTranslucentSkinFixEnabled", true);
 
         builder.pop();
         CLIENT_CONFIG = builder.build();
