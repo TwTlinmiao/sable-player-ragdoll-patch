@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity;
 import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity.BodyPart;
 import dev.leo.sableplayerragdoll.entity.RagdollDollEntity;
+import twtlinmiao.sableplayerragdollpatch.DynamicLanternCompat;
 import twtlinmiao.sableplayerragdollpatch.config.RagdollPatchClientConfig;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -48,6 +49,34 @@ public class CuriosRenderHelperMixin {
             case "necklace", "back", "belt", "charm", "curio" -> bodyPart == BodyPart.TORSO;
             default -> bodyPart == BodyPart.TORSO;
         };
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void spr$renderStack(
+        ItemStack stack,
+        SlotContext slotContext,
+        RenderLayerParent<RagdollDollEntity, PlayerModel<RagdollDollEntity>> parent,
+        PoseStack poseStack,
+        MultiBufferSource buffer,
+        int packedLight,
+        float partialTick
+    ) {
+        if (DynamicLanternCompat.renderRagdollWaistItem(stack, slotContext, parent, poseStack, buffer, packedLight)) {
+            return;
+        }
+
+        CuriosRendererRegistry.getRenderer(stack.getItem()).ifPresent(renderer -> {
+            try {
+                ICurioRenderer raw = renderer;
+                raw.render(
+                    stack, slotContext, poseStack, parent, buffer,
+                    packedLight, partialTick,
+                    0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+                );
+            } catch (Exception e) {
+                // Swallow rendering errors for individual curio items.
+            }
+        });
     }
 
     private static ModelPart spr$oppositeLimb(BodyPart bodyPart, PlayerModel<?> model) {
@@ -109,18 +138,7 @@ public class CuriosRenderHelperMixin {
                     offLimb.y += 10000.0f;
                 }
 
-                CuriosRendererRegistry.getRenderer(stack.getItem()).ifPresent(renderer -> {
-                    try {
-                        ICurioRenderer raw = renderer;
-                        raw.render(
-                            stack, slotContext, poseStack, parent, buffer,
-                            packedLight, partialTick,
-                            0.0f, 0.0f, 0.0f, 0.0f, 0.0f
-                        );
-                    } catch (Exception e) {
-                        // Swallow rendering errors for individual curio items.
-                    }
-                });
+                spr$renderStack(stack, slotContext, parent, poseStack, buffer, packedLight, partialTick);
 
                 if (offLimb != null) {
                     offLimb.y = offLimbY;
@@ -176,19 +194,7 @@ public class CuriosRenderHelperMixin {
                     offLimb.y += 10000.0f;
                 }
 
-                CuriosRendererRegistry.getRenderer(stack.getItem()).ifPresent(renderer -> {
-                    try {
-                        @SuppressWarnings({"unchecked", "rawtypes"})
-                        ICurioRenderer raw = renderer;
-                        raw.render(
-                            stack, slotContext, poseStack, parent, buffer,
-                            packedLight, partialTick,
-                            0.0f, 0.0f, 0.0f, 0.0f, 0.0f
-                        );
-                    } catch (Exception e) {
-                        // Swallow rendering errors for individual curio items.
-                    }
-                });
+                spr$renderStack(stack, slotContext, parent, poseStack, buffer, packedLight, partialTick);
 
                 if (offLimb != null) {
                     offLimb.y = offLimbY;

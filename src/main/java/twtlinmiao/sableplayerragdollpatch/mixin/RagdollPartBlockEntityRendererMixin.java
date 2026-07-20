@@ -3,6 +3,7 @@ package twtlinmiao.sableplayerragdollpatch.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity;
 import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity.BodyPart;
+import dev.leo.sableplayerragdoll.entity.RagdollDollEntity;
 import dev.leo.sableplayerragdoll.neoforge.client.RagdollPartBlockEntityRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
@@ -17,11 +18,18 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import twtlinmiao.sableplayerragdollpatch.BeltborneLanternAccess;
+import twtlinmiao.sableplayerragdollpatch.BeltborneLanternRenderCompat;
+import twtlinmiao.sableplayerragdollpatch.ArmorRenderAccess;
 import twtlinmiao.sableplayerragdollpatch.DynamicLightsCompat;
+import twtlinmiao.sableplayerragdollpatch.config.RagdollPatchClientConfig;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -61,6 +69,30 @@ public class RagdollPartBlockEntityRendererMixin {
     )
     private RenderType spr$irisSafeSkinRenderType(ResourceLocation texture) {
         return IrisTransparencyCompat.ragdollSkinRenderType(texture);
+    }
+
+    @Redirect(
+        method = "renderLayers",
+        at = @At(
+            value = "INVOKE",
+            target = "Ldev/leo/sableplayerragdoll/block/entity/RagdollPartBlockEntity;itemBySlot(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;"
+        ),
+        remap = false
+    )
+    private ItemStack spr$useArmorRenderOverride(RagdollPartBlockEntity blockEntity, EquipmentSlot slot) {
+        ItemStack original = blockEntity.itemBySlot(slot);
+        if (!RagdollPatchClientConfig.COSMETIC_ARMOR_COMPAT_ENABLED.get()) {
+            return original;
+        }
+
+        ArmorRenderAccess access = (ArmorRenderAccess) (Object) blockEntity;
+
+        if (access.spr$isArmorSlotHidden(slot)) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack override = access.spr$getArmorRenderOverride(slot);
+        return override.isEmpty() ? original : override;
     }
 
     @Redirect(
@@ -111,6 +143,41 @@ public class RagdollPartBlockEntityRendererMixin {
         model.rightSleeve.visible &= visibility.spr$isModelPartShown(PlayerModelPart.RIGHT_SLEEVE);
         model.leftPants.visible &= visibility.spr$isModelPartShown(PlayerModelPart.LEFT_PANTS_LEG);
         model.rightPants.visible &= visibility.spr$isModelPartShown(PlayerModelPart.RIGHT_PANTS_LEG);
+    }
+
+    @Inject(
+        method = "render(Ldev/leo/sableplayerragdoll/block/entity/RagdollPartBlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V",
+        at = @At(
+            value = "INVOKE",
+            target = "Ldev/leo/sableplayerragdoll/neoforge/client/RagdollPartBlockEntityRenderer;renderLayers(Ldev/leo/sableplayerragdoll/block/entity/RagdollPartBlockEntity;Ldev/leo/sableplayerragdoll/block/entity/RagdollPartBlockEntity$BodyPart;Lnet/minecraft/world/entity/LivingEntity;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IF)V",
+            shift = At.Shift.AFTER
+        ),
+        remap = false
+    )
+    private void spr$renderStoredBeltborneLantern(
+        RagdollPartBlockEntity blockEntity,
+        float partialTick,
+        PoseStack poseStack,
+        MultiBufferSource buffer,
+        int packedLight,
+        int packedOverlay,
+        CallbackInfo ci
+    ) {
+        BodyPart bodyPart = blockEntity.bodyPart();
+        if (bodyPart != BodyPart.TORSO) return;
+
+        BeltborneLanternAccess access = (BeltborneLanternAccess) (Object) blockEntity;
+        ItemStack stack = access.spr$getBeltborneLanternStack();
+        if (stack.isEmpty()) return;
+        if (BeltborneLanternRenderCompat.hasStoredAccessoriesLantern(blockEntity, bodyPart)) return;
+
+        BeltborneLanternRenderCompat.renderBeltStateLantern(
+            stack,
+            (RenderLayerParent<RagdollDollEntity, PlayerModel<RagdollDollEntity>>) (Object) this,
+            poseStack,
+            buffer,
+            RagdollLighting.worldLightFor(blockEntity, partialTick, packedLight)
+        );
     }
 
     @Inject(

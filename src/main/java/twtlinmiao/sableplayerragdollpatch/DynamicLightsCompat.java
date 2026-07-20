@@ -4,6 +4,8 @@ import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity;
 import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity.BodyPart;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.sublevel.ClientSubLevel;
+import twtlinmiao.sableplayerragdollpatch.BeltborneLanternAccess;
+import twtlinmiao.sableplayerragdollpatch.BeltborneLanternStateCompat;
 import twtlinmiao.sableplayerragdollpatch.config.RagdollPatchClientConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -20,6 +22,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -28,6 +32,9 @@ public final class DynamicLightsCompat {
    private static final double MAX_RADIUS = 7.75D;
    private static final double MAX_RADIUS_SQUARED = MAX_RADIUS * MAX_RADIUS;
    private static final int REBUILD_RADIUS = 8;
+   private static final long CLEANUP_INTERVAL_TICKS = 20L;
+   private static final long STALE_SOURCE_TICKS = 40L;
+   private static final Set<String> SPLIT_ARM_SLOTS = Set.of("ring", "hands");
 
    private static final Map<RagdollPartBlockEntity, RagdollLightSource> SOURCES = new WeakHashMap<>();
 
@@ -35,6 +42,7 @@ public final class DynamicLightsCompat {
    private static SodiumBackend sodiumBackend;
    private static LambBackend lambBackend;
    private static boolean disabledSourcesCleared = true;
+   private static long lastCleanupGameTime = Long.MIN_VALUE;
 
    private DynamicLightsCompat() {
    }
@@ -65,29 +73,164 @@ public final class DynamicLightsCompat {
 
       RagdollLightSource source = SOURCES.computeIfAbsent(blockEntity, RagdollLightSource::new);
       source.update(partialTick);
+      source.markSeen(currentGameTime());
 
       if (source.luminance() > 0) {
+         source.activate();
          if (sodiumBackend != null) sodiumBackend.add(source);
          if (lambBackend != null) lambBackend.add(source);
+      } else {
+         deactivate(source);
       }
+
+      cleanupStaleSources();
    }
 
    public static int modelLuminance(RagdollPartBlockEntity blockEntity) {
       if (blockEntity == null || !isEnabled()) return 0;
 
-      boolean submerged = isSubmerged(blockEntity);
-      return Math.max(
-         getStackLuminance(blockEntity.itemBySlot(EquipmentSlot.MAINHAND), submerged),
-         getStackLuminance(blockEntity.itemBySlot(EquipmentSlot.OFFHAND), submerged)
-      );
+      return getAllLuminance(blockEntity);
    }
 
    private static int getLuminance(RagdollPartBlockEntity blockEntity) {
-      EquipmentSlot slot = lightSlot(blockEntity.bodyPart());
-      if (slot == null) return 0;
+      boolean submerged = isSubmerged(blockEntity);
+      int luminance = 0;
 
-      ItemStack stack = blockEntity.itemBySlot(slot);
-      return getStackLuminance(stack, isSubmerged(blockEntity));
+      EquipmentSlot slot = lightSlot(blockEntity.bodyPart());
+      if (slot != null) {
+         luminance = Math.max(luminance, getStackLuminance(blockEntity.itemBySlot(slot), submerged));
+      }
+
+      luminance = Math.max(
+         luminance,
+         getStoredSlotLuminance(
+            blockEntity.getCurioItems(),
+            blockEntity.getCurioCosmeticItems(),
+            blockEntity.getCurioRenderOptions(),
+            blockEntity.bodyPart(),
+            submerged,
+            true
+         )
+      );
+      luminance = Math.max(
+         luminance,
+         getStoredSlotLuminance(
+            blockEntity.getAccessoriesItems(),
+            blockEntity.getAccessoriesCosmeticItems(),
+            blockEntity.getAccessoriesRenderOptions(),
+            blockEntity.bodyPart(),
+            submerged,
+            true
+         )
+      );
+      if (blockEntity.bodyPart() == BodyPart.TORSO) {
+         luminance = Math.max(luminance, getBeltborneLuminance(((BeltborneLanternAccess) (Object) blockEntity).spr$getBeltborneLanternStack()));
+      }
+
+      return luminance;
+   }
+
+   private static int getAllLuminance(RagdollPartBlockEntity blockEntity) {
+      boolean submerged = isSubmerged(blockEntity);
+      int luminance = Math.max(
+         getStackLuminance(blockEntity.itemBySlot(EquipmentSlot.MAINHAND), submerged),
+         getStackLuminance(blockEntity.itemBySlot(EquipmentSlot.OFFHAND), submerged)
+      );
+
+      luminance = Math.max(
+         luminance,
+         getStoredSlotLuminance(
+            blockEntity.getCurioItems(),
+            blockEntity.getCurioCosmeticItems(),
+            blockEntity.getCurioRenderOptions(),
+            blockEntity.bodyPart(),
+            submerged,
+            false
+         )
+      );
+      luminance = Math.max(
+         luminance,
+         getStoredSlotLuminance(
+            blockEntity.getAccessoriesItems(),
+            blockEntity.getAccessoriesCosmeticItems(),
+            blockEntity.getAccessoriesRenderOptions(),
+            blockEntity.bodyPart(),
+            submerged,
+            false
+         )
+      );
+      luminance = Math.max(luminance, getBeltborneLuminance(((BeltborneLanternAccess) (Object) blockEntity).spr$getBeltborneLanternStack()));
+
+      return luminance;
+   }
+
+   private static int getStoredSlotLuminance(
+      Map<String, List<ItemStack>> stacksBySlot,
+      Map<String, List<ItemStack>> cosmeticsBySlot,
+      Map<String, List<Boolean>> renderOptionsBySlot,
+      BodyPart bodyPart,
+      boolean submerged,
+      boolean filterByBodyPart
+   ) {
+      int luminance = 0;
+      Set<String> slotIds = new HashSet<>();
+      slotIds.addAll(stacksBySlot.keySet());
+      slotIds.addAll(cosmeticsBySlot.keySet());
+
+      for (String slotId : slotIds) {
+         List<ItemStack> stacks = stacksBySlot.getOrDefault(slotId, List.of());
+         List<ItemStack> cosmetics = cosmeticsBySlot.getOrDefault(slotId, List.of());
+         List<Boolean> renderOptions = renderOptionsBySlot.get(slotId);
+         int slots = Math.max(stacks.size(), cosmetics.size());
+
+         for (int index = 0; index < slots; index++) {
+            if (filterByBodyPart && !isSlotForPart(slotId, index, bodyPart)) continue;
+            if (!shouldRender(renderOptions, index)) continue;
+
+            ItemStack stack = selectedStack(stacks, cosmetics, index);
+            if (isDisabledWaistLanternSlot(slotId, stack)) continue;
+            luminance = Math.max(luminance, getStackLuminance(stack, submerged));
+         }
+      }
+
+      return luminance;
+   }
+
+   private static ItemStack selectedStack(List<ItemStack> stacks, List<ItemStack> cosmetics, int index) {
+      if (index < cosmetics.size() && !cosmetics.get(index).isEmpty()) {
+         return cosmetics.get(index);
+      }
+      return index < stacks.size() ? stacks.get(index) : ItemStack.EMPTY;
+   }
+
+   private static boolean shouldRender(List<Boolean> renderOptions, int index) {
+      return renderOptions == null || index >= renderOptions.size() || Boolean.TRUE.equals(renderOptions.get(index));
+   }
+
+   private static boolean isDisabledWaistLanternSlot(String slotId, ItemStack stack) {
+      if (RagdollPatchClientConfig.WAIST_LANTERN_COMPAT_ENABLED.get() || stack.isEmpty()) return false;
+      if (!"belt".equals(slotId) && !"waist".equals(slotId)) return false;
+
+      return BeltborneLanternStateCompat.isLamp(stack) || DynamicLanternCompat.isRenderableWaistItem(stack);
+   }
+
+   private static boolean isSlotForPart(String slotId, int index, BodyPart bodyPart) {
+      if ("feet".equals(slotId) || "legs".equals(slotId)) {
+         return bodyPart == BodyPart.LEFT_LEG || bodyPart == BodyPart.RIGHT_LEG;
+      }
+      if (SPLIT_ARM_SLOTS.contains(slotId)) {
+         if (bodyPart == BodyPart.LEFT_ARM || bodyPart == BodyPart.RIGHT_ARM) {
+            BodyPart expected = (index % 2 == 0) ? BodyPart.RIGHT_ARM : BodyPart.LEFT_ARM;
+            return bodyPart == expected;
+         }
+         return false;
+      }
+      return switch (slotId) {
+         case "head", "hat", "face" -> bodyPart == BodyPart.HEAD;
+         case "hands", "hand", "wrist", "bracelet" -> bodyPart == BodyPart.LEFT_ARM || bodyPart == BodyPart.RIGHT_ARM;
+         case "necklace", "back", "belt", "charm", "curio", "chest", "body" -> bodyPart == BodyPart.TORSO;
+         default -> bodyPart == BodyPart.TORSO;
+      };
    }
 
    private static int getStackLuminance(ItemStack stack, boolean submerged) {
@@ -96,10 +239,16 @@ public final class DynamicLightsCompat {
       int luminance = 0;
       if (sodiumBackend != null) luminance = Math.max(luminance, sodiumBackend.getItemLuminance(stack, submerged));
       if (lambBackend != null) luminance = Math.max(luminance, lambBackend.getItemLuminance(stack, submerged));
+      luminance = Math.max(luminance, getBeltborneLuminance(stack));
       if (sodiumBackend == null && lambBackend == null && stack.getItem() instanceof BlockItem blockItem) {
          luminance = Math.max(luminance, blockItem.getBlock().defaultBlockState().getLightEmission());
       }
       return luminance;
+   }
+
+   private static int getBeltborneLuminance(ItemStack stack) {
+      if (!RagdollPatchClientConfig.WAIST_LANTERN_COMPAT_ENABLED.get()) return 0;
+      return BeltborneLanternStateCompat.luminance(stack);
    }
 
    private static boolean isEnabled() {
@@ -110,10 +259,35 @@ public final class DynamicLightsCompat {
       if (disabledSourcesCleared) return;
 
       for (RagdollLightSource source : SOURCES.values()) {
-         source.disable();
-         if (sodiumBackend != null) sodiumBackend.remove(source);
+         deactivate(source);
       }
+      SOURCES.clear();
       disabledSourcesCleared = true;
+   }
+
+   private static void cleanupStaleSources() {
+      long gameTime = currentGameTime();
+      if (gameTime < 0 || gameTime - lastCleanupGameTime < CLEANUP_INTERVAL_TICKS) return;
+
+      lastCleanupGameTime = gameTime;
+      Iterator<Map.Entry<RagdollPartBlockEntity, RagdollLightSource>> iterator = SOURCES.entrySet().iterator();
+      while (iterator.hasNext()) {
+         RagdollLightSource source = iterator.next().getValue();
+         if (source.isGone() || gameTime - source.lastSeenGameTime() > STALE_SOURCE_TICKS) {
+            deactivate(source);
+            iterator.remove();
+         }
+      }
+   }
+
+   private static void deactivate(RagdollLightSource source) {
+      source.disable();
+      if (sodiumBackend != null) sodiumBackend.remove(source);
+   }
+
+   private static long currentGameTime() {
+      Level level = Minecraft.getInstance().level;
+      return level == null ? -1L : level.getGameTime();
    }
 
    private static EquipmentSlot lightSlot(BodyPart bodyPart) {
@@ -164,6 +338,8 @@ public final class DynamicLightsCompat {
       private int luminance;
       private int previousLuminance = -1;
       private boolean lambAdded;
+      private boolean removed = true;
+      private long lastSeenGameTime = Long.MIN_VALUE;
       private final Set<Long> sodiumTrackedSections = new HashSet<>();
 
       private RagdollLightSource(RagdollPartBlockEntity blockEntity) {
@@ -175,7 +351,7 @@ public final class DynamicLightsCompat {
       private void update(float partialTick) {
          RagdollPartBlockEntity entity = this.blockEntity.get();
          if (entity == null || entity.isRemoved()) {
-            this.luminance = 0;
+            this.disable();
             return;
          }
 
@@ -185,6 +361,25 @@ public final class DynamicLightsCompat {
 
       private void disable() {
          this.luminance = 0;
+         this.removed = true;
+         this.lambAdded = false;
+      }
+
+      private void activate() {
+         this.removed = false;
+      }
+
+      private void markSeen(long gameTime) {
+         this.lastSeenGameTime = gameTime;
+      }
+
+      private long lastSeenGameTime() {
+         return this.lastSeenGameTime;
+      }
+
+      private boolean isGone() {
+         RagdollPartBlockEntity entity = this.blockEntity.get();
+         return entity == null || entity.isRemoved() || this.removed;
       }
 
       private Level level() {
@@ -291,6 +486,7 @@ public final class DynamicLightsCompat {
 
          try {
             if ((boolean) this.containsLightSource.invoke(this.instance, source.sodiumProxy())) {
+               this.scheduleTrackedChunks(source);
                this.removeLightSource.invoke(this.instance, source.sodiumProxy());
             }
          } catch (ReflectiveOperationException exception) {
@@ -312,6 +508,37 @@ public final class DynamicLightsCompat {
             this.scheduleChunkRebuild.invoke(null, renderer, sectionX, sectionY, sectionZ);
          } catch (ReflectiveOperationException exception) {
             SablePlayerRagdollPatch.LOGGER.warn("Failed to schedule Sodium dynamic light chunk rebuild", exception);
+         }
+      }
+
+      private void scheduleTrackedChunks(RagdollLightSource source) {
+         Object renderer = Minecraft.getInstance().levelRenderer;
+         if (renderer == null) return;
+
+         for (long section : source.sodiumTrackedSections) {
+            schedule(renderer, SectionPos.x(section), SectionPos.y(section), SectionPos.z(section));
+         }
+         scheduleAround(renderer, source.previousPosition);
+         scheduleAround(renderer, source.position);
+         source.sodiumTrackedSections.clear();
+      }
+
+      private void scheduleAround(Object renderer, Vector3d position) {
+         if (Double.isNaN(position.x)) return;
+
+         int minX = SectionPos.blockToSectionCoord((int) Math.floor(position.x - REBUILD_RADIUS));
+         int minY = SectionPos.blockToSectionCoord((int) Math.floor(position.y - REBUILD_RADIUS));
+         int minZ = SectionPos.blockToSectionCoord((int) Math.floor(position.z - REBUILD_RADIUS));
+         int maxX = SectionPos.blockToSectionCoord((int) Math.floor(position.x + REBUILD_RADIUS));
+         int maxY = SectionPos.blockToSectionCoord((int) Math.floor(position.y + REBUILD_RADIUS));
+         int maxZ = SectionPos.blockToSectionCoord((int) Math.floor(position.z + REBUILD_RADIUS));
+
+         for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+               for (int z = minZ; z <= maxZ; z++) {
+                  schedule(renderer, x, y, z);
+               }
+            }
          }
       }
    }
@@ -501,7 +728,7 @@ public final class DynamicLightsCompat {
             case "lightAtPos" -> lightAtPos((BlockPos) args[0], (double) args[1], this.source.position, this.source.luminance());
             case "getBoundingBox" -> this.backend.boundingBox(this.source.position);
             case "hasChanged" -> this.source.changed();
-            case "isRemoved" -> false;
+            case "isRemoved" -> this.source.isGone();
             case "toString" -> "SableRagdollLambDynamicLight";
             case "hashCode" -> System.identityHashCode(proxy);
             case "equals" -> proxy == args[0];

@@ -3,6 +3,10 @@ package twtlinmiao.sableplayerragdollpatch.mixin;
 import dev.leo.ragdollcorpse.corpse.CorpseDeathHandler;
 import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity;
 import dev.leo.sableplayerragdoll.physics.RagdollAssemblyHelper;
+import twtlinmiao.sableplayerragdollpatch.BeltborneLanternStateCompat;
+import twtlinmiao.sableplayerragdollpatch.BeltborneLanternAccess;
+import twtlinmiao.sableplayerragdollpatch.ArmorRenderAccess;
+import twtlinmiao.sableplayerragdollpatch.ArmorRenderCompat;
 import twtlinmiao.sableplayerragdollpatch.ModelPartVisibilityAccess;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
@@ -29,10 +33,11 @@ public class CorpseDeathHandlerMixin {
         if (rootId == null) return;
 
         int mask = ModelPartVisibilityAccess.captureMask(player);
-        copyMaskToParts(player.serverLevel(), rootId, mask);
+        ArmorRenderCompat.ArmorState armorState = ArmorRenderCompat.capture(player);
+        copyStateToParts(player.serverLevel(), rootId, mask, armorState, BeltborneLanternStateCompat.capture(player));
     }
 
-    private static void copyMaskToParts(ServerLevel level, UUID rootId, int mask) {
+    private static void copyStateToParts(ServerLevel level, UUID rootId, int mask, ArmorRenderCompat.ArmorState armorState, net.minecraft.world.item.ItemStack beltborneLanternStack) {
         List<UUID> partIds = RagdollAssemblyHelper.linkedParts(rootId);
         SubLevelContainer container = SubLevelContainer.getContainer(level);
         if (container == null) return;
@@ -45,6 +50,8 @@ public class CorpseDeathHandlerMixin {
             BlockEntity blockEntity = serverSubLevel.getLevel().getBlockEntity(blockPos);
             if (blockEntity instanceof RagdollPartBlockEntity part) {
                 ((ModelPartVisibilityAccess) (Object) part).spr$setModelPartMask(mask);
+                ArmorRenderCompat.apply((ArmorRenderAccess) (Object) part, armorState);
+                ((BeltborneLanternAccess) (Object) part).spr$setBeltborneLanternStack(beltborneLanternStack);
             }
         }
     }

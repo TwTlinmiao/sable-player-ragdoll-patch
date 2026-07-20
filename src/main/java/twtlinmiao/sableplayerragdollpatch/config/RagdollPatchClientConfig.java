@@ -12,6 +12,8 @@ public final class RagdollPatchClientConfig {
     public static ModConfigSpec.BooleanValue CURIOS_FIX_ENABLED;
     public static ModConfigSpec.BooleanValue IRIS_TRANSLUCENT_SKIN_FIX_ENABLED;
     public static ModConfigSpec.BooleanValue RAGDOLL_DYNAMIC_LIGHTS_ENABLED;
+    public static ModConfigSpec.BooleanValue COSMETIC_ARMOR_COMPAT_ENABLED;
+    public static ModConfigSpec.BooleanValue WAIST_LANTERN_COMPAT_ENABLED;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -45,6 +47,22 @@ public final class RagdollPatchClientConfig {
                 "Also brightens the ragdoll model itself to match the held light."
             )
             .define("ragdollDynamicLightsEnabled", true);
+
+        COSMETIC_ARMOR_COMPAT_ENABLED = builder
+            .comment(
+                "Apply hidden armor and cosmetic armor overrides to ragdoll corpses.",
+                "Supports Cosmetic Armor Reworked and Accessories armor visibility/alternative stacks.",
+                "Disable to render the armor stored directly on the ragdoll without cosmetic overrides."
+            )
+            .define("cosmeticArmorCompatEnabled", true);
+
+        WAIST_LANTERN_COMPAT_ENABLED = builder
+            .comment(
+                "Render waist lantern items on ragdoll corpses.",
+                "Controls both Dynamic Lantern waist item rendering and Beltborne Lanterns/Accessories Layer lamps.",
+                "Also lets supported waist lanterns contribute to ragdoll dynamic lights."
+            )
+            .define("waistLanternCompatEnabled", true);
 
         builder.pop();
         CLIENT_CONFIG = builder.build();

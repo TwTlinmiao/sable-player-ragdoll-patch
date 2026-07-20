@@ -13,6 +13,7 @@
         "RagdollPartBlockMixin"
     ],
     "client": [
+        "AccessoriesRenderHelperMixin",
         "CuriosRenderHelperMixin",
         "MobRagdollPartBlockEntityRendererMixin",
         "RagdollPartBlockEntityRendererMixin",
