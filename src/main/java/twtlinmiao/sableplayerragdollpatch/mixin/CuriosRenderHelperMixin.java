@@ -5,7 +5,6 @@ import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity;
 import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity.BodyPart;
 import dev.leo.sableplayerragdoll.entity.RagdollDollEntity;
 import twtlinmiao.sableplayerragdollpatch.DynamicLanternCompat;
-import twtlinmiao.sableplayerragdollpatch.config.RagdollPatchClientConfig;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -102,8 +101,6 @@ public class CuriosRenderHelperMixin {
         float partialTick,
         CallbackInfo ci
     ) {
-        if (!RagdollPatchClientConfig.CURIOS_FIX_ENABLED.get()) return;
-
         PlayerModel<RagdollDollEntity> model = parent.getModel();
         ModelPart offLimb = spr$oppositeLimb(bodyPart, model);
 
@@ -160,8 +157,6 @@ public class CuriosRenderHelperMixin {
         float partialTick,
         CallbackInfo ci
     ) {
-        if (!RagdollPatchClientConfig.CURIOS_FIX_ENABLED.get()) return;
-
         var handler = entity.getCapability(CuriosCapability.INVENTORY);
         if (handler == null) {
             ci.cancel();

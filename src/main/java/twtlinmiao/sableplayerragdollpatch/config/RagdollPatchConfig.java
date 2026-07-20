@@ -16,13 +16,11 @@ public final class RagdollPatchConfig {
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
-        builder.comment("General settings").push("general");
-
         GRAB_INTERCEPT_ENABLED = builder
             .comment(
-                "Cancel block interactions (opening chests, using buttons, etc.)",
+                "Cancel container and door interactions",
                 "while the player is grabbing a ragdoll part.",
-                "Set to false to allow normal block interactions while grabbing."
+                "Set to false to allow normal container and door interactions while grabbing."
             )
             .define("grabInterceptEnabled", true);
 
@@ -35,8 +33,6 @@ public final class RagdollPatchConfig {
             )
             .define("noCollideDefault", true);
 
-        builder.pop().push("corpse");
-
         CORPSE_INTERCEPT_ENABLED = builder
             .comment(
                 "When enabled, prevents interacting with a ragdoll corpse",
@@ -45,7 +41,6 @@ public final class RagdollPatchConfig {
             )
             .define("corpseInterceptEnabled", true);
 
-        builder.pop();
         SERVER_CONFIG = builder.build();
     }
 
