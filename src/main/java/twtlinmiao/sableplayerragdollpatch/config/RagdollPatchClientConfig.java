@@ -14,6 +14,7 @@ public final class RagdollPatchClientConfig {
     public static ModConfigSpec.BooleanValue RAGDOLL_DYNAMIC_LIGHTS_ENABLED;
     public static ModConfigSpec.BooleanValue COSMETIC_ARMOR_COMPAT_ENABLED;
     public static ModConfigSpec.BooleanValue WAIST_LANTERN_COMPAT_ENABLED;
+    public static ModConfigSpec.BooleanValue HIDE_CORPSE_CAPE_ENABLED;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -63,6 +64,14 @@ public final class RagdollPatchClientConfig {
                 "Also lets supported waist lanterns contribute to ragdoll dynamic lights."
             )
             .define("waistLanternCompatEnabled", true);
+
+        HIDE_CORPSE_CAPE_ENABLED = builder
+            .comment(
+                "Hide capes on ragdoll corpses even when the player had cape rendering enabled.",
+                "Other skin customization parts, such as hats, sleeves, jacket and pants, still follow",
+                "the player's settings captured at death. Disable to sync cape visibility too."
+            )
+            .define("hideCorpseCapeEnabled", true);
 
         builder.pop();
         CLIENT_CONFIG = builder.build();

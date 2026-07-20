@@ -212,6 +212,11 @@ public class RagdollPartBlockEntityRendererMixin {
         CallbackInfo ci
     ) {
         ModelPartVisibilityAccess visibility = (ModelPartVisibilityAccess) (Object) blockEntity;
+        if (blockEntity.isCorpse() && RagdollPatchClientConfig.HIDE_CORPSE_CAPE_ENABLED.get()) {
+            ci.cancel();
+            return;
+        }
+
         if (visibility.spr$hasModelPartMask() && !visibility.spr$isModelPartShown(PlayerModelPart.CAPE)) {
             ci.cancel();
         }

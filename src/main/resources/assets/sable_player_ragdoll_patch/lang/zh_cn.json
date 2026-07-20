@@ -15,6 +15,8 @@
   "sable_player_ragdoll_patch.configuration.cosmeticArmorCompatEnabled.tooltip": "渲染布娃娃尸体时应用 Cosmetic Armor Reworked 和 Accessories 的隐藏盔甲与外观盔甲替换。",
   "sable_player_ragdoll_patch.configuration.waistLanternCompatEnabled": "腰带灯笼布娃娃兼容",
   "sable_player_ragdoll_patch.configuration.waistLanternCompatEnabled.tooltip": "在布娃娃尸体上渲染 Dynamic Lantern 腰间物品和 Beltborne Lanterns/Accessories Layer 灯笼，并让支持的腰带灯笼参与布娃娃动态光源。",
+  "sable_player_ragdoll_patch.configuration.hideCorpseCapeEnabled": "隐藏尸体披风",
+  "sable_player_ragdoll_patch.configuration.hideCorpseCapeEnabled.tooltip": "即使玩家生前开启了披风，也在布娃娃尸体上隐藏披风。帽子、袖子、外套、裤腿等其他皮肤自定义部件仍按死亡时的玩家设置同步。",
   "sable_player_ragdoll_patch.configuration.grabInterceptEnabled": "抓取时阻止误交互",
   "sable_player_ragdoll_patch.configuration.grabInterceptEnabled.tooltip": "玩家抓取布娃娃部件时，阻止打开箱子、按按钮等方块误交互。",
   "sable_player_ragdoll_patch.configuration.noCollideDefault": "默认无碰撞",
@@ -26,6 +28,7 @@
   "sable_player_ragdoll_patch.configuration.rendering.ragdollDynamicLightsEnabled": "布娃娃动态光源",
   "sable_player_ragdoll_patch.configuration.rendering.cosmeticArmorCompatEnabled": "外观盔甲布娃娃兼容",
   "sable_player_ragdoll_patch.configuration.rendering.waistLanternCompatEnabled": "腰带灯笼布娃娃兼容",
+  "sable_player_ragdoll_patch.configuration.rendering.hideCorpseCapeEnabled": "隐藏尸体披风",
   "sable_player_ragdoll_patch.configuration.general.grabInterceptEnabled": "抓取时阻止误交互",
   "sable_player_ragdoll_patch.configuration.general.noCollideDefault": "默认无碰撞",
   "sable_player_ragdoll_patch.configuration.corpse.corpseInterceptEnabled": "尸体抓取交互修复"

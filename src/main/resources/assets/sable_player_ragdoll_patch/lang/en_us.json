@@ -15,6 +15,8 @@
   "sable_player_ragdoll_patch.configuration.cosmeticArmorCompatEnabled.tooltip": "Applies hidden armor and cosmetic armor overrides from Cosmetic Armor Reworked and Accessories when rendering ragdoll corpses.",
   "sable_player_ragdoll_patch.configuration.waistLanternCompatEnabled": "Waist Lantern Ragdoll Compat",
   "sable_player_ragdoll_patch.configuration.waistLanternCompatEnabled.tooltip": "Renders Dynamic Lantern waist items and Beltborne Lanterns/Accessories Layer lamps on ragdoll corpses, and lets supported waist lanterns contribute to ragdoll dynamic lights.",
+  "sable_player_ragdoll_patch.configuration.hideCorpseCapeEnabled": "Hide Corpse Capes",
+  "sable_player_ragdoll_patch.configuration.hideCorpseCapeEnabled.tooltip": "Hides capes on ragdoll corpses even if the player had cape rendering enabled. Other skin customization parts still follow the player's settings captured at death.",
   "sable_player_ragdoll_patch.configuration.grabInterceptEnabled": "Block Misclicks While Grabbing",
   "sable_player_ragdoll_patch.configuration.grabInterceptEnabled.tooltip": "Cancels block interactions, such as opening chests or pressing buttons, while the player is grabbing a ragdoll part.",
   "sable_player_ragdoll_patch.configuration.noCollideDefault": "Default No-Collide",
@@ -26,6 +28,7 @@
   "sable_player_ragdoll_patch.configuration.rendering.ragdollDynamicLightsEnabled": "Ragdoll Dynamic Lights",
   "sable_player_ragdoll_patch.configuration.rendering.cosmeticArmorCompatEnabled": "Cosmetic Armor Ragdoll Compat",
   "sable_player_ragdoll_patch.configuration.rendering.waistLanternCompatEnabled": "Waist Lantern Ragdoll Compat",
+  "sable_player_ragdoll_patch.configuration.rendering.hideCorpseCapeEnabled": "Hide Corpse Capes",
   "sable_player_ragdoll_patch.configuration.general.grabInterceptEnabled": "Block Misclicks While Grabbing",
   "sable_player_ragdoll_patch.configuration.general.noCollideDefault": "Default No-Collide",
   "sable_player_ragdoll_patch.configuration.corpse.corpseInterceptEnabled": "Corpse Grab Interaction Fix"
