@@ -4,6 +4,7 @@ import dev.leo.ragdollcorpse.corpse.CorpseInteractHandler;
 import dev.leo.sableplayerragdoll.api.RagdollInteractEvent;
 import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity;
 import dev.leo.sableplayerragdoll.physics.RagdollAssemblyHelper;
+import twtlinmiao.sableplayerragdollpatch.RagdollGrabAccess;
 import twtlinmiao.sableplayerragdollpatch.config.RagdollPatchConfig;
 import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import dev.ryanhcode.sable.sublevel.ServerSubLevel;
@@ -54,6 +55,6 @@ public class CorpseInteractHandlerMixin {
    }
 
    private static boolean isGrabbedBy(RagdollPartBlockEntity part, UUID playerId) {
-      return part.isGrabbedBy(playerId);
+      return ((RagdollGrabAccess) (Object) part).spr$isGrabbedBy(playerId);
    }
 }

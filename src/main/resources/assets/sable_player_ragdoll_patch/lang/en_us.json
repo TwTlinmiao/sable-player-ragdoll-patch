@@ -13,6 +13,8 @@
   "sable_player_ragdoll_patch.configuration.waistLanternCompatEnabled.tooltip": "Renders Dynamic Lantern waist items and Beltborne Lanterns/Accessories Layer lamps on ragdoll corpses, and lets supported waist lanterns contribute to ragdoll dynamic lights. Requires the corresponding mods to toggle meaningful behavior.",
   "sable_player_ragdoll_patch.configuration.hideCorpseCapeEnabled": "Hide Corpse Capes",
   "sable_player_ragdoll_patch.configuration.hideCorpseCapeEnabled.tooltip": "Hides capes on ragdoll corpses even if the player had cape rendering enabled. Other skin customization parts still follow the player's settings captured at death.",
+  "sable_player_ragdoll_patch.configuration.leawindCameraCompatEnabled": "Leawind Camera Compat",
+  "sable_player_ragdoll_patch.configuration.leawindCameraCompatEnabled.tooltip": "Disables Leawind's Third Person camera while the local player is self-ragdolled, letting Sable handle both falling down and standing up to avoid camera snap-back.",
   "sable_player_ragdoll_patch.configuration.grabInterceptEnabled": "Block Containers/Doors While Grabbing",
   "sable_player_ragdoll_patch.configuration.grabInterceptEnabled.tooltip": "Cancels container and door interactions while the player is grabbing a ragdoll part.",
   "sable_player_ragdoll_patch.configuration.noCollideDefault": "No Collision",

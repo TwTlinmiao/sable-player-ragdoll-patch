@@ -90,12 +90,18 @@ dependencies {
     compileOnly("top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1")
     compileOnly("net.neoforged.fancymodloader:loader:4.0.42")
 
-    compileOnly files(
-        'libs/sable_player_ragdoll-1.21.1-0.7.5.jar',
-        'libs/ragdoll_corpse-1.21.1-0.3.0.jar',
-        'libs/sable-companion-common-1.21.1-1.6.0.jar',
-        'libs/sable-neoforge-1.21.1-2.0.3.jar'
-    )
+    compileOnly("dev.leo.sableplayerragdoll:sable_player_ragdoll-${minecraft_version}:0.7.5") {
+        transitive = false
+    }
+    compileOnly("dev.leo.ragdollcorpse:ragdoll_corpse-${minecraft_version}:0.3.0") {
+        transitive = false
+    }
+    compileOnly("dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:1.6.0") {
+        transitive = false
+    }
+    compileOnly("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:2.0.3") {
+        transitive = false
+    }
 }
 
 processResources {

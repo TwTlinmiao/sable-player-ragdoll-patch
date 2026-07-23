@@ -13,6 +13,7 @@ public final class RagdollPatchClientConfig {
     public static ModConfigSpec.BooleanValue COSMETIC_ARMOR_COMPAT_ENABLED;
     public static ModConfigSpec.BooleanValue WAIST_LANTERN_COMPAT_ENABLED;
     public static ModConfigSpec.BooleanValue HIDE_CORPSE_CAPE_ENABLED;
+    public static ModConfigSpec.BooleanValue LEAWIND_CAMERA_COMPAT_ENABLED;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -48,6 +49,14 @@ public final class RagdollPatchClientConfig {
                 "the player's settings captured at death. Disable to sync cape visibility too."
             )
             .define("hideCorpseCapeEnabled", true);
+
+        LEAWIND_CAMERA_COMPAT_ENABLED = builder
+            .comment(
+                "Disable Leawind's Third Person camera while the local player is self-ragdolled.",
+                "When enabled, falling down and standing up are handled by Sable's own camera",
+                "to avoid Leawind snapping the camera back during self-ragdoll recovery."
+            )
+            .define("leawindCameraCompatEnabled", true);
 
         CLIENT_CONFIG = builder.build();
     }

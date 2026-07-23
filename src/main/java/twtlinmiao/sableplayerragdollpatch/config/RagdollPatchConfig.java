@@ -24,6 +24,14 @@ public final class RagdollPatchConfig {
             )
             .define("grabInterceptEnabled", true);
 
+        CORPSE_INTERCEPT_ENABLED = builder
+            .comment(
+                "When enabled, prevents interacting with a ragdoll corpse",
+                "if the player is currently grabbing any part of that ragdoll.",
+                "(Only applies when ragdoll-corpse mod is installed)"
+            )
+            .define("corpseInterceptEnabled", true);
+
         NO_COLLIDE_DEFAULT = builder
             .comment(
                 "Default state of No-Collide mode on server/world load.",
@@ -32,14 +40,6 @@ public final class RagdollPatchConfig {
                 "Can be toggled at runtime with /nocollide command."
             )
             .define("noCollideDefault", true);
-
-        CORPSE_INTERCEPT_ENABLED = builder
-            .comment(
-                "When enabled, prevents interacting with a ragdoll corpse",
-                "if the player is currently grabbing any part of that ragdoll.",
-                "(Only applies when ragdoll-corpse mod is installed)"
-            )
-            .define("corpseInterceptEnabled", true);
 
         SERVER_CONFIG = builder.build();
     }

@@ -13,6 +13,8 @@
   "sable_player_ragdoll_patch.configuration.waistLanternCompatEnabled.tooltip": "在布娃娃尸体上渲染 Dynamic Lantern 腰间物品和 Beltborne Lanterns/Accessories Layer 灯笼，并让支持的腰间灯笼参与布娃娃动态光源。需要下载对应模组才能进行开与关。",
   "sable_player_ragdoll_patch.configuration.hideCorpseCapeEnabled": "隐藏尸体披风",
   "sable_player_ragdoll_patch.configuration.hideCorpseCapeEnabled.tooltip": "即使玩家生前开启了披风，也在布娃娃尸体上隐藏披风。帽子、袖子、外套、裤腿等其他皮肤自定义部件仍按死亡时的玩家设置同步。",
+  "sable_player_ragdoll_patch.configuration.leawindCameraCompatEnabled": "Leawind相机兼容",
+  "sable_player_ragdoll_patch.configuration.leawindCameraCompatEnabled.tooltip": "玩家自己变成布娃娃时禁用 Leawind's Third Person 相机，让倒下和起来都由 Sable 相机处理，避免相机瞬移回来。",
   "sable_player_ragdoll_patch.configuration.grabInterceptEnabled": "抓取时阻止容器/门交互",
   "sable_player_ragdoll_patch.configuration.grabInterceptEnabled.tooltip": "玩家抓取布娃娃部件时，阻止打开容器、门等方块交互。",
   "sable_player_ragdoll_patch.configuration.noCollideDefault": "无碰撞",

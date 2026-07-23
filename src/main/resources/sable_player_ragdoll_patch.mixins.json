@@ -10,7 +10,8 @@
         "EntityMoveMixin",
         "EntityPushMixin",
         "PlayerPoseMixin",
-        "RagdollPartBlockMixin"
+        "RagdollPartBlockMixin",
+        "RagdollExpireHelperMixin"
     ],
     "client": [
         "AccessoriesRenderHelperMixin",
