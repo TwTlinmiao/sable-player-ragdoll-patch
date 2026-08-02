@@ -32,6 +32,10 @@ public class RagdollPartBlockEntityModelPartMixin implements ModelPartVisibility
     @Unique
     private static final String SPR_HIDDEN_ARMOR_MASK_KEY = "SprHiddenArmorMask";
     @Unique
+    private static final String SPR_HIDDEN_BODY_MASK_KEY = "SprHiddenBodyMask";
+    @Unique
+    private static final String SPR_SKINLESS_ARMOR_MASK_KEY = "SprSkinlessArmorMask";
+    @Unique
     private static final String SPR_ARMOR_OVERRIDES_KEY = "SprArmorOverrides";
     @Unique
     private static final String SPR_ARMOR_SLOT_KEY = "Slot";
@@ -44,6 +48,10 @@ public class RagdollPartBlockEntityModelPartMixin implements ModelPartVisibility
     private int spr$modelPartMask = -1;
     @Unique
     private int spr$hiddenArmorMask = 0;
+    @Unique
+    private int spr$hiddenBodyMask = 0;
+    @Unique
+    private int spr$skinlessArmorMask = 0;
     @Unique
     private final EnumMap<EquipmentSlot, ItemStack> spr$armorRenderOverrides = new EnumMap<>(EquipmentSlot.class);
     @Unique
@@ -60,6 +68,8 @@ public class RagdollPartBlockEntityModelPartMixin implements ModelPartVisibility
     private void spr$clearPlayerModelParts(BodyPart bodyPart, GameProfile profile, CallbackInfo ci) {
         this.spr$modelPartMask = -1;
         this.spr$hiddenArmorMask = 0;
+        this.spr$hiddenBodyMask = 0;
+        this.spr$skinlessArmorMask = 0;
         this.spr$armorRenderOverrides.clear();
         this.spr$beltborneLanternStack = ItemStack.EMPTY;
     }
@@ -71,6 +81,12 @@ public class RagdollPartBlockEntityModelPartMixin implements ModelPartVisibility
         }
         if (spr$hiddenArmorMask != 0) {
             tag.putInt(SPR_HIDDEN_ARMOR_MASK_KEY, spr$hiddenArmorMask);
+        }
+        if (spr$hiddenBodyMask != 0) {
+            tag.putInt(SPR_HIDDEN_BODY_MASK_KEY, spr$hiddenBodyMask);
+        }
+        if (spr$skinlessArmorMask != 0) {
+            tag.putInt(SPR_SKINLESS_ARMOR_MASK_KEY, spr$skinlessArmorMask);
         }
         if (!spr$armorRenderOverrides.isEmpty()) {
             tag.put(SPR_ARMOR_OVERRIDES_KEY, spr$saveArmorOverrides(registries));
@@ -84,6 +100,8 @@ public class RagdollPartBlockEntityModelPartMixin implements ModelPartVisibility
     private void spr$loadModelPartMask(CompoundTag tag, HolderLookup.Provider registries, CallbackInfo ci) {
         spr$modelPartMask = tag.contains(SPR_MODEL_PART_MASK_KEY) ? tag.getInt(SPR_MODEL_PART_MASK_KEY) : -1;
         spr$hiddenArmorMask = tag.contains(SPR_HIDDEN_ARMOR_MASK_KEY) ? tag.getInt(SPR_HIDDEN_ARMOR_MASK_KEY) : 0;
+        spr$hiddenBodyMask = tag.contains(SPR_HIDDEN_BODY_MASK_KEY) ? tag.getInt(SPR_HIDDEN_BODY_MASK_KEY) : 0;
+        spr$skinlessArmorMask = tag.contains(SPR_SKINLESS_ARMOR_MASK_KEY) ? tag.getInt(SPR_SKINLESS_ARMOR_MASK_KEY) : 0;
         spr$loadArmorOverrides(tag, registries);
         spr$beltborneLanternStack = tag.contains(SPR_BELTBORNE_LANTERN_KEY)
             ? ItemStack.parse(registries, tag.get(SPR_BELTBORNE_LANTERN_KEY)).orElse(ItemStack.EMPTY)
@@ -109,6 +127,28 @@ public class RagdollPartBlockEntityModelPartMixin implements ModelPartVisibility
     @Override
     public void spr$setHiddenArmorMask(int mask) {
         this.spr$hiddenArmorMask = mask;
+        spr$syncArmorState();
+    }
+
+    @Override
+    public int spr$getHiddenBodyMask() {
+        return spr$hiddenBodyMask;
+    }
+
+    @Override
+    public void spr$setHiddenBodyMask(int mask) {
+        this.spr$hiddenBodyMask = mask;
+        spr$syncArmorState();
+    }
+
+    @Override
+    public int spr$getSkinlessArmorMask() {
+        return spr$skinlessArmorMask;
+    }
+
+    @Override
+    public void spr$setSkinlessArmorMask(int mask) {
+        this.spr$skinlessArmorMask = mask;
         spr$syncArmorState();
     }
 

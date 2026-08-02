@@ -6,6 +6,7 @@ import dev.leo.sableplayerragdoll.block.entity.RagdollPartBlockEntity.BodyPart;
 import dev.leo.sableplayerragdoll.entity.RagdollDollEntity;
 import dev.leo.sableplayerragdoll.neoforge.client.RagdollPartBlockEntityRenderer;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.ResourceLocation;
 import twtlinmiao.sableplayerragdollpatch.IrisTransparencyCompat;
 import twtlinmiao.sableplayerragdollpatch.ModelPartVisibilityAccess;
@@ -19,6 +20,7 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -28,6 +30,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import twtlinmiao.sableplayerragdollpatch.BeltborneLanternAccess;
 import twtlinmiao.sableplayerragdollpatch.BeltborneLanternRenderCompat;
 import twtlinmiao.sableplayerragdollpatch.ArmorRenderAccess;
+import twtlinmiao.sableplayerragdollpatch.ArmorRenderCompat;
 import twtlinmiao.sableplayerragdollpatch.DynamicLightsCompat;
 import twtlinmiao.sableplayerragdollpatch.config.RagdollPatchClientConfig;
 import org.spongepowered.asm.mixin.injection.At;
@@ -92,7 +95,48 @@ public class RagdollPartBlockEntityRendererMixin {
         }
 
         ItemStack override = access.spr$getArmorRenderOverride(slot);
-        return override.isEmpty() ? original : override;
+        ItemStack stack = override.isEmpty() ? original : override;
+        if ((access.spr$getSkinlessArmorMask() & ArmorRenderCompat.slotMask(slot)) != 0) {
+            return ArmorRenderCompat.withoutArmourersWorkshopSkin(stack);
+        }
+        return stack;
+    }
+
+    @Redirect(
+        method = "renderLayers",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/renderer/entity/layers/RenderLayer;render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/Entity;FFFFFF)V"
+        ),
+        remap = false
+    )
+    private void spr$skipArmorLayerForAwCoveredBody(
+        RenderLayer layer,
+        PoseStack poseStack,
+        MultiBufferSource buffer,
+        int packedLight,
+        Entity entity,
+        float limbSwing,
+        float limbSwingAmount,
+        float partialTick,
+        float ageInTicks,
+        float netHeadYaw,
+        float headPitch,
+        RagdollPartBlockEntity blockEntity,
+        BodyPart bodyPart,
+        LivingEntity renderEntity,
+        PoseStack originalPoseStack,
+        MultiBufferSource originalBuffer,
+        int originalPackedLight,
+        float originalPartialTick
+    ) {
+        if (RagdollPatchClientConfig.COSMETIC_ARMOR_COMPAT_ENABLED.get()
+            && spr$isVanillaArmorLayer(layer)
+            && ArmorRenderCompat.bodyPartCoveredByMask(bodyPart, ((ArmorRenderAccess) (Object) blockEntity).spr$getHiddenBodyMask())) {
+            return;
+        }
+
+        layer.render(poseStack, buffer, packedLight, entity, limbSwing, limbSwingAmount, partialTick, ageInTicks, netHeadYaw, headPitch);
     }
 
     @Redirect(
@@ -135,6 +179,13 @@ public class RagdollPartBlockEntityRendererMixin {
         CallbackInfo ci
     ) {
         ModelPartVisibilityAccess visibility = (ModelPartVisibilityAccess) (Object) blockEntity;
+        ArmorRenderAccess armorAccess = (ArmorRenderAccess) (Object) blockEntity;
+        if (RagdollPatchClientConfig.COSMETIC_ARMOR_COMPAT_ENABLED.get()
+            && ArmorRenderCompat.bodyPartCoveredByMask(blockEntity.bodyPart(), armorAccess.spr$getHiddenBodyMask())) {
+            spr$hideCurrentBodyPart(blockEntity.bodyPart());
+            return;
+        }
+
         if (!visibility.spr$hasModelPartMask()) return;
 
         model.hat.visible &= visibility.spr$isModelPartShown(PlayerModelPart.HAT);
@@ -143,6 +194,39 @@ public class RagdollPartBlockEntityRendererMixin {
         model.rightSleeve.visible &= visibility.spr$isModelPartShown(PlayerModelPart.RIGHT_SLEEVE);
         model.leftPants.visible &= visibility.spr$isModelPartShown(PlayerModelPart.LEFT_PANTS_LEG);
         model.rightPants.visible &= visibility.spr$isModelPartShown(PlayerModelPart.RIGHT_PANTS_LEG);
+    }
+
+    private static boolean spr$isVanillaArmorLayer(RenderLayer layer) {
+        return layer != null && layer.getClass().getName().equals("net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer");
+    }
+
+    private void spr$hideCurrentBodyPart(BodyPart bodyPart) {
+        switch (bodyPart) {
+            case HEAD -> {
+                model.head.visible = false;
+                model.hat.visible = false;
+            }
+            case TORSO -> {
+                model.body.visible = false;
+                model.jacket.visible = false;
+            }
+            case LEFT_ARM -> {
+                model.leftArm.visible = false;
+                model.leftSleeve.visible = false;
+            }
+            case RIGHT_ARM -> {
+                model.rightArm.visible = false;
+                model.rightSleeve.visible = false;
+            }
+            case LEFT_LEG -> {
+                model.leftLeg.visible = false;
+                model.leftPants.visible = false;
+            }
+            case RIGHT_LEG -> {
+                model.rightLeg.visible = false;
+                model.rightPants.visible = false;
+            }
+        }
     }
 
     @Inject(

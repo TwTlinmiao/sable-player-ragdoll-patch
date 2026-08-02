@@ -8,6 +8,14 @@ public interface ArmorRenderAccess {
 
     void spr$setHiddenArmorMask(int mask);
 
+    int spr$getHiddenBodyMask();
+
+    void spr$setHiddenBodyMask(int mask);
+
+    int spr$getSkinlessArmorMask();
+
+    void spr$setSkinlessArmorMask(int mask);
+
     ItemStack spr$getArmorRenderOverride(EquipmentSlot slot);
 
     void spr$setArmorRenderOverride(EquipmentSlot slot, ItemStack stack);
