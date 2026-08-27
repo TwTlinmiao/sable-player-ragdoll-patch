@@ -7,11 +7,14 @@
     "mixins": [
         "RagdollPartBlockEntityMixin",
         "RagdollPartBlockEntityModelPartMixin",
+        "SableSubLevelCommandsMixin",
+        "ServerChunkCacheOrphanPlotMixin",
         "EntityMoveMixin",
         "EntityPushMixin",
         "PlayerPoseMixin",
         "RagdollPartBlockMixin",
-        "RagdollExpireHelperMixin"
+        "RagdollExpireHelperMixin",
+        "RagdollProjectileItemMixin"
     ],
     "client": [
         "AccessoriesRenderHelperMixin",

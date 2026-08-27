@@ -23,6 +23,9 @@ config = "${mod_id}.ruok.mixins.json"
 [[mixins]]
 config = "${mod_id}.leawind.mixins.json"
 
+[[mixins]]
+config = "${mod_id}.punchy.mixins.json"
+
 [[dependencies."${mod_id}"]]
 modId = "sable_player_ragdoll"
 type = "required"

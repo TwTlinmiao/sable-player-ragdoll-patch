@@ -6,10 +6,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import twtlinmiao.sableplayerragdollpatch.config.RagdollPatchClientConfig;
 import twtlinmiao.sableplayerragdollpatch.config.RagdollPatchConfig;
+import dev.leo.sableplayerragdoll.physics.RagdollSessionManager;
+import dev.ryanhcode.sable.api.sublevel.ServerSubLevelContainer;
+import dev.ryanhcode.sable.api.sublevel.SubLevelContainer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.IExtensionPoint;
@@ -20,6 +29,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 @Mod(SablePlayerRagdollPatch.MOD_ID)
@@ -39,7 +49,9 @@ public final class SablePlayerRagdollPatchNeoForge {
       }
 
       NeoForge.EVENT_BUS.addListener(SablePlayerRagdollPatchNeoForge::onRightClickBlock);
+      NeoForge.EVENT_BUS.addListener(SablePlayerRagdollPatchNeoForge::onRightClickItem);
       NeoForge.EVENT_BUS.addListener(SablePlayerRagdollPatchNeoForge::onRegisterCommands);
+      NeoForge.EVENT_BUS.addListener(SablePlayerRagdollPatchNeoForge::onPlayerLoggedIn);
    }
 
    @SuppressWarnings("unchecked")
@@ -88,11 +100,30 @@ public final class SablePlayerRagdollPatchNeoForge {
    }
 
    private static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+      if (event.getEntity() instanceof ServerPlayer player
+            && RagdollSessionManager.isPlayerCurrentlyRagdolled(player)
+            && isRagdollBlockedProjectile(event.getItemStack())) {
+         event.setCanceled(true);
+         return;
+      }
+
       if (!RagdollPatchConfig.GRAB_INTERCEPT_ENABLED.get()) return;
       if (event.getEntity() instanceof Player player
             && ActiveGrabbers.PLAYERS.contains(player.getUUID())) {
          event.setCanceled(true);
       }
+   }
+
+   private static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+      if (event.getEntity() instanceof ServerPlayer player
+            && RagdollSessionManager.isPlayerCurrentlyRagdolled(player)
+            && isRagdollBlockedProjectile(event.getItemStack())) {
+         event.setCanceled(true);
+      }
+   }
+
+   private static boolean isRagdollBlockedProjectile(ItemStack stack) {
+      return stack.is(Items.ENDER_PEARL) || stack.is(Items.WIND_CHARGE);
    }
 
    private static void onRegisterCommands(RegisterCommandsEvent event) {
@@ -108,6 +139,36 @@ public final class SablePlayerRagdollPatchNeoForge {
             );
             return 1;
          })
+      );
+   }
+
+   private static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+      if (!(event.getEntity() instanceof ServerPlayer player)) return;
+
+      ServerLevel level = player.serverLevel();
+      ServerSubLevelContainer container = SubLevelContainer.getContainer(level);
+      BlockPos playerPos = player.blockPosition();
+      if (container == null || !container.inBounds(playerPos)
+            || container.getPlot(new ChunkPos(playerPos)) != null) {
+         return;
+      }
+
+      player.stopRiding();
+      player.setInvisible(false);
+
+      BlockPos spawn = level.getSharedSpawnPos();
+      player.teleportTo(
+         level,
+         spawn.getX() + 0.5D,
+         spawn.getY() + 1.0D,
+         spawn.getZ() + 0.5D,
+         player.getYRot(),
+         player.getXRot()
+      );
+      SablePlayerRagdollPatch.LOGGER.warn(
+         "Recovered {} from removed Sable plot at {}",
+         player.getGameProfile().getName(),
+         playerPos.toShortString()
       );
    }
 }
