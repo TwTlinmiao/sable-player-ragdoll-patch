@@ -7,13 +7,14 @@
 
 这是一个用于修复 `Sable_Ragdolls`、`Ragdoll Reactions` 和 `Sable:Ragdoll_Corpse` 的补丁模组。
 
-## 功能（截至现在1.9）
+## 功能（截至现在1.9.1）
 
 ### 修复功能汇总
 - 修复了 `FA+Player-v1.1` 材质包导致手臂粗大。
 - 修复了 `FA+Player_Expressions-v1.2` 材质包导致模型显示出现异常。
 - 修复了 `Curios` 模组的显示问题。
 - 修复了死亡前若第二层皮肤或披风隐藏了，那么死后布娃娃也会正常隐藏这些内容。
+- 修复了布娃娃披风忽略纹理透明度的问题，支持全透明和半透明像素（尸体披风需关闭 `hideCorpseCapeEnabled` 才会显示）。
 - 修复了 `RuOK` 开启方块实体剔除时，布娃娃方块实体不可见问题。
 - 修复了布娃娃光照问题，让布娃娃可以接收到附近的光照。
 - 修复了手臂嵌入地板时变黑。
@@ -53,7 +54,7 @@
 
 This is a patch mod to fix `Sable_Ragdolls`, `Ragdoll Reactions`, and `Sable:Ragdoll_Corpse`.
 
-## Features (as of version 1.9)
+## Features (as of version 1.9.1)
 
 ### Fixes Summary
 
@@ -61,6 +62,7 @@ This is a patch mod to fix `Sable_Ragdolls`, `Ragdoll Reactions`, and `Sable:Rag
 - Fixed an issue where the `FA+Player_Expressions-v1.2` texture pack caused abnormal model display.
 - Fixed a display issue with the `Curios` mod.
 - Fixed an issue where if a second layer of skin or cape was hidden before death, the ragdoll would also hide these elements correctly after death.
+- Fixed ragdoll capes ignoring texture alpha, supporting fully and partially transparent pixels (disable `hideCorpseCapeEnabled` to show capes on corpses).
 - Fixed an issue where ragdoll block entities were invisible when `RuOK` enabled block entity culling.
 - Fixed ragdoll lighting issues, allowing the ragdoll to receive nearby light.
 - Fixed the issue where the arms would turn black when embedded in the floor.

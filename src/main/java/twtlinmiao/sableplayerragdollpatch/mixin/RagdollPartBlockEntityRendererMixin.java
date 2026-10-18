@@ -281,6 +281,20 @@ public class RagdollPartBlockEntityRendererMixin {
         DynamicLightsCompat.updateRenderedPart(blockEntity, partialTick);
     }
 
+    @Redirect(
+        method = "renderCape",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/renderer/RenderType;entitySolid(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/RenderType;"
+        ),
+        remap = false
+    )
+    private RenderType spr$translucentCapeRenderType(ResourceLocation texture) {
+        // The original solid pass ignores cape alpha, making transparent pixels opaque.
+        // A translucent pass preserves both fully transparent and partially transparent pixels.
+        return RenderType.entityTranslucent(texture);
+    }
+
     @Inject(
         method = "renderCape",
         at = @At("HEAD"),
