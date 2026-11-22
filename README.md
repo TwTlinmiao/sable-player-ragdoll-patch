@@ -7,7 +7,7 @@
 
 这是一个用于修复 `Sable_Ragdolls`、`Ragdoll Reactions` 和 `Sable:Ragdoll_Corpse` 的补丁模组。
 
-## 功能（截至现在1.9.1）
+## 功能（截至现在1.9.2）
 
 ### 修复功能汇总
 - 修复了 `FA+Player-v1.1` 材质包导致手臂粗大。
@@ -23,6 +23,7 @@
 - 修复了布娃娃模式时仍显示 `punchy` 的第一人称手臂（punchy兼容）。
 - 修复了布娃娃模式下仍然可以投掷末影珍珠和风弹的bug。
 - 修复了布娃娃模式下若执行 '/sable remove @e' 导致玩家掉出世界和后续无法进入世界的bug。
+- 适配 Sable Ragdolls 0.8.1，修复更新后玩家死亡崩溃及删除布娃娃部件时的兼容问题。
 
 ### 兼容模组汇总
 - 兼容模组 `Dynamic Lantern` 和 `Beltborne Lanterns`，布娃娃可以正确显示灯笼的位置与外观，并且与动态光源兼容。
@@ -39,7 +40,7 @@
 
 ### 模组依赖
 
-- [sable-player-ragdoll](https://modrinth.com/mod/sable-ragdolls) 必须的版本`0.7.5`
+- [sable-player-ragdoll](https://modrinth.com/mod/sable-ragdolls) 必须的版本`0.8.1`
 - [ragdoll_corpse](https://modrinth.com/mod/sable-ragdoll-corpse) 必须的版本`0.3.0`
 - [Ragdoll Reactions](https://modrinth.com/mod/ragdoll-reactions) 可选的版本`0.7.0`
 
@@ -54,7 +55,7 @@
 
 This is a patch mod to fix `Sable_Ragdolls`, `Ragdoll Reactions`, and `Sable:Ragdoll_Corpse`.
 
-## Features (as of version 1.9.1)
+## Features (as of version 1.9.2)
 
 ### Fixes Summary
 
@@ -71,6 +72,7 @@ This is a patch mod to fix `Sable_Ragdolls`, `Ragdoll Reactions`, and `Sable:Rag
 - Fixed the issue where the `punchy` first-person arms were still displayed in ragdoll mode (punchy compatible).
 - Fixed a bug where ragdoll could still throw ender pearls and wind bombs in ragdoll mode.
 - Fixed a bug where executing `/sable remove @e` in ragdoll mode would cause the player to fall out of the world and be unable to re-enter.
+- Updated compatibility with Sable Ragdolls 0.8.1, fixing crashes on player death and ragdoll-part removal after the update.
 
 ### Compatible Mods Summary
 
@@ -89,7 +91,7 @@ This is a patch mod to fix `Sable_Ragdolls`, `Ragdoll Reactions`, and `Sable:Rag
 
 ### Module Dependencies
 
-- [Sable_Player_Ragdoll](https://modrinth.com/mod/sable-ragdolls) Required version `0.7.5`
+- [Sable_Player_Ragdoll](https://modrinth.com/mod/sable-ragdolls) Required version `0.8.1`
 - [Ragdoll_Corpse](https://modrinth.com/mod/sable-ragdoll-corpse) Required version `0.3.0`
 - [Ragdoll_Reactions](https://modrinth.com/mod/ragdoll-reactions) Optional version `0.7.0`
 

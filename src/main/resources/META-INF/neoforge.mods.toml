@@ -29,7 +29,7 @@ config = "${mod_id}.punchy.mixins.json"
 [[dependencies."${mod_id}"]]
 modId = "sable_player_ragdoll"
 type = "required"
-versionRange = "[0.7.5,)"
+versionRange = "[0.8.1,)"
 ordering = "NONE"
 side = "BOTH"
 

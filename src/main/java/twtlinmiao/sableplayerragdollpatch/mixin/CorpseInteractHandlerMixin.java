@@ -37,7 +37,7 @@ public class CorpseInteractHandlerMixin {
    }
 
    private static boolean isGrabbingAnyPart(ServerLevel level, UUID rootId, ServerPlayer player) {
-      List<UUID> partIds = RagdollAssemblyHelper.linkedParts(rootId);
+      List<UUID> partIds = RagdollAssemblyHelper.linkedParts(level, rootId);
       SubLevelContainer container = SubLevelContainer.getContainer(level);
       if (container == null) return false;
 

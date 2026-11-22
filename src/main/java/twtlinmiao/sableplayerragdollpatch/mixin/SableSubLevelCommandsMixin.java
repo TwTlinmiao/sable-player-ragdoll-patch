@@ -32,26 +32,26 @@ public class SableSubLevelCommandsMixin {
         SubLevel selected = container.getSubLevel(plotX, plotZ);
         if (!(container instanceof ServerSubLevelContainer serverContainer)
             || !(selected instanceof ServerSubLevel selectedServer)
-            || !RagdollAssemblyHelper.isRagdollPart(selectedServer.getUniqueId())) {
+            || !RagdollAssemblyHelper.isRagdollPart(serverContainer.getLevel(), selectedServer.getUniqueId())) {
             if (selected != null) {
                 container.removeSubLevel(plotX, plotZ, reason);
             }
             return;
         }
 
-        UUID rootId = RagdollAssemblyHelper.linkedRoot(selectedServer.getUniqueId());
+        UUID rootId = RagdollAssemblyHelper.linkedRoot(serverContainer.getLevel(), selectedServer.getUniqueId());
         SubLevel root = rootId == null ? selectedServer : container.getSubLevel(rootId);
         if (!(root instanceof ServerSubLevel ragdollRoot) || !RagdollSessionManager.isMarkedRagdoll(ragdollRoot)) {
             container.removeSubLevel(plotX, plotZ, reason);
             return;
         }
 
-        RagdollExpireHelper.expireImmediate(
-            serverContainer.physicsSystem(),
-            serverContainer.getLevel(),
-            ragdollRoot,
-            "sable remove command",
-            true
-        );
+        RagdollExpireHelper.expire(serverContainer.getLevel(), ragdollRoot, "sable remove command");
+        for (UUID partId : RagdollAssemblyHelper.linkedParts(serverContainer.getLevel(), ragdollRoot.getUniqueId())) {
+            SubLevel part = container.getSubLevel(partId);
+            if (part != null) {
+                container.removeSubLevel(part, reason);
+            }
+        }
     }
 }

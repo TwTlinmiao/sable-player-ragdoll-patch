@@ -38,7 +38,7 @@ public class CorpseDeathHandlerMixin {
     }
 
     private static void copyStateToParts(ServerLevel level, UUID rootId, int mask, ArmorRenderCompat.ArmorState armorState, net.minecraft.world.item.ItemStack beltborneLanternStack) {
-        List<UUID> partIds = RagdollAssemblyHelper.linkedParts(rootId);
+        List<UUID> partIds = RagdollAssemblyHelper.linkedParts(level, rootId);
         SubLevelContainer container = SubLevelContainer.getContainer(level);
         if (container == null) return;
 

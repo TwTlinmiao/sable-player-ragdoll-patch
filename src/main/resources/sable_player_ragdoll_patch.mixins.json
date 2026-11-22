@@ -13,7 +13,6 @@
         "EntityPushMixin",
         "PlayerPoseMixin",
         "RagdollPartBlockMixin",
-        "RagdollExpireHelperMixin",
         "RagdollProjectileItemMixin"
     ],
     "client": [
